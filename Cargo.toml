@@ -7,7 +7,7 @@ documentation = "https://docs.rs/rfc2289-otp"
 repository = "https://github.com/JonathanWilbur/rfc2289-otp"
 version = "1.0.0"
 edition = "2021"
-keywords = ["otp", "one-time", "one", "time", "pad", "rfc2289"]
+keywords = ["otp", "one", "time", "pad", "rfc2289"]
 categories = ["cryptography", "encoding", "no-std", "parsing"]
 readme = "README.md"
 
