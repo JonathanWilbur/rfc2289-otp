@@ -143,7 +143,7 @@ use md4::{Md4, Digest};
 use hex::FromHex;
 
 extern crate alloc;
-use alloc::boxed::Box;
+use alloc::{borrow::ToOwned, boxed::Box};
 
 /// Defined in [IETF RFC 1760](https://www.rfc-editor.org/rfc/rfc1760) for use
 /// in S/KEY, but used OTP in
@@ -567,6 +567,43 @@ pub type Hex64Bit = [u8; 8];
 pub enum HexOrWords <'a> {
     Hex(Hex64Bit),
     Words(&'a str),
+}
+
+impl HexOrWords<'_> {
+
+    pub fn try_into_bytes (&self) -> Option<[u8; 8]> {
+        match self {
+            HexOrWords::Hex(h) => Some(h.to_owned()),
+            HexOrWords::Words(w) => {
+                let mut w = w.split_ascii_whitespace();
+                let six_words = [ w.next(), w.next(), w.next(), w.next(), w.next(), w.next() ];
+                if six_words[5].is_none() {
+                    return None;
+                }
+                if w.next().is_some() {
+                    return None;
+                }
+                let six_words = [
+                    six_words[0].unwrap(),
+                    six_words[1].unwrap(),
+                    six_words[2].unwrap(),
+                    six_words[3].unwrap(),
+                    six_words[4].unwrap(),
+                    six_words[5].unwrap(),
+                ];
+                let maybe_64bits = decode_word_format_with_std_dict(six_words);
+                if maybe_64bits.is_none() {
+                    return None;
+                }
+                let (v, valid_checksum) = maybe_64bits.unwrap();
+                if !valid_checksum {
+                    return None;
+                }
+                Some(v)
+            },
+        }
+    }
+
 }
 
 /// A parsed OTP init string per Section 4.1 of
